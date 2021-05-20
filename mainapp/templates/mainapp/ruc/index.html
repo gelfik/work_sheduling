@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load tags_jinja %}
+{% block title %}Управление{% endblock %}
+
+{% block content %}
+    {% if arguments.error %}
+        <div class="alert alert-danger">
+            {{ arguments.error }}
+        </div>
+    {% endif %}
+
+    <button type="button" class="btn btn-dark btn-sm mb-3 float-right" role="button" data-toggle="modal"
+            data-target="#AddModal">
+        Добавить работу
+    </button>
+
+    <div class="table-responsive bg-white">
+        <table class="table table-sm table-hover bg-white">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Статус</th>
+                <th scope="col">Наименование</th>
+                <th scope="col">Срок</th>
+                <th scope="col">Дата создания</th>
+                <th scope="col">Послед. измен.</th>
+                <th scope="col">Изменить</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if arguments.work_list|cheak_count_list > 0 %}
+                {% for work in arguments.work_list %}
+                    <tr role="button">
+                        <th scope="row" data-toggle="tooltip" data-placement="bottom">{{ work.id }}</th>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ work.status_id }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ work.name }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.date_execution }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.date_create }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.date_last_edit }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">
+                            <button type="button" class="btn btn-sm" role="button"
+                                    data-toggle="modal"
+                                    data-target="#EditModal_{{ usr.id }}">
+                                <i class="fa fa-edit fa-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr role="button">
+                    <th scope="row" data-toggle="tooltip" data-placement="bottom"
+                        title="Нажмите для редактирования" colspan="7" class="center">
+                        Работы еще не добавлены!
+                    </th>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

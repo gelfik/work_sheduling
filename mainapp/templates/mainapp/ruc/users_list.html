@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load tags_jinja %}
+{% block title %}Сотрудники{% endblock %}
+
+{% block content %}
+
+    {% if arguments.error %}
+        <div class="alert alert-danger">
+            {{ arguments.error }}
+        </div>
+    {% endif %}
+
+    {% if arguments.add_user_data %}
+        <div class="alert alert-success my_border">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="alert-heading">Сотрудник успешно добавлен!</h4>
+            <hr>
+            <p>Логин: <b>{{ arguments.add_user_data.username }}</b><br>
+                Пароль: <b>{{ arguments.add_user_data.password }}</b></p>
+
+        </div>
+    {% endif %}
+
+    <button type="button" class="btn btn-dark btn-sm mb-3 float-right" role="button" data-toggle="modal"
+            data-target="#AddModal">
+        Добавить сотрудника
+    </button>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-hover bg-white">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col">Фамилия</th>
+                <th scope="col">Имя</th>
+                <th scope="col">Логин</th>
+                <th scope="col">Должность</th>
+                <th scope="col">Email</th>
+                <th scope="col">Изменить</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if arguments.user_list|cheak_count_list > 0 %}
+                {% for usr in arguments.user_list %}
+                    <tr role="button">
+                        <th scope="row" data-toggle="tooltip" data-placement="bottom">{{ usr.id }}</th>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.last_name }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.first_name }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.username }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.groups.all.0.name }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">{{ usr.email }}</td>
+                        <td data-toggle="tooltip" data-placement="bottom">
+                            <button type="button" class="btn btn-sm" role="button"
+                                    data-toggle="modal"
+                                    data-target="#EditModal_{{ usr.id }}">
+                                <i class="fa fa-edit fa-lg"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm" role="button"
+                                    data-toggle="modal"
+                                    data-target="#DelModal_{{ usr.id }}">
+                                <i class="fa fa-trash fa-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr role="button">
+                    <th scope="row" data-toggle="tooltip" data-placement="bottom"
+                        title="Нажмите для редактирования" colspan="7" class="center">
+                        Сотрудники еще не добавлены!
+                    </th>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Add Modal -->
+    <div class="modal fade" id="AddModal" tabindex="-1" role="dialog" aria-labelledby="AddModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="AddModalLabel">Добавление нового сотрудника</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="{% url 'register_url' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        {% for field in arguments.form %}
+                            <div class="form-group">
+                                {% if field.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ field.errors }}
+                                    </div>
+                                {% endif %}
+                                {{ field.label }}
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary btn-block">Добавить</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if arguments.user_edit %}
+        {% for data in arguments.user_edit %}
+            <!-- Edit Modal {{ data.id }} -->
+            <div class="modal fade" id="EditModal_{{ data.id }}" tabindex="-1" role="dialog"
+                 aria-labelledby="EditModalLabel_{{ data.id }}"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="EditModalLabel_{{ data.id }}">Редактирвоание пользователя</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="{% url 'edit_url' data.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                {% for field in data.form %}
+                                    <div class="form-group">
+                                        {% if field.errors %}
+                                            <div class="alert alert-danger">
+                                                {{ field.errors }}
+                                            </div>
+                                        {% endif %}
+                                        {{ field.label }}
+                                        {{ field }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="modal-footer">
+                                <button formmethod="post" type="submit" class="btn btn-primary">Сохранить изменения
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Del Modal {{ data.id }} -->
+            <div class="modal fade" id="DelModal_{{ data.id }}" tabindex="-1" role="dialog"
+                 aria-labelledby="DelModalLabel_{{ data.id }}"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="DelModalLabel_{{ data.id }}">Удаление пользователя</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="{% url 'edit_url' data.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <p>Вы действительно хотите удалить данного пользователя?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button formmethod="get" type="submit" class="btn btn-danger">Удалить</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}
